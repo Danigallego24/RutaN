@@ -147,7 +147,10 @@ export default function RutaNDashboard() {
       if (data.es_itinerario) {
           setItineraryResult(data);
           const title = data.titulo || `Viaje a ${data.destino || 'España'}`
-          const aiMsg: Message = { role: 'ai', content: `¡Listo! He diseñado tu viaje a **${title}**. 👉 Míralo en el panel de la derecha.` }
+          
+          // Si hay mensaje_chat narrativo, lo mostramos primero
+          const narrativeMessage = data.mensaje_chat || `¡Listo! He diseñado tu viaje a **${title}**. 👉 Míralo en el panel de la derecha.`
+          const aiMsg: Message = { role: 'ai', content: narrativeMessage }
           
           setCurrentConversation((c:any) => {
             if (!c) return c

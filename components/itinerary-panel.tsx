@@ -12,11 +12,21 @@ import { cn } from "@/lib/utils"
 export interface Activity {
   activity?: string
   category?: "Culture" | "Food" | "Hiking" | "Relaxation" | "Sightseeing" | string
+  hora?: string
+  momento?: string
+  detalles?: string
+}
+
+export interface ItineraryItem extends Activity {
+  hora?: string
+  momento?: string
+  detalles?: string
 }
 
 export type DayItinerary =
   | ({ day: number } & Record<string, any>)
-  | ({ dia: number } & Record<string, any>)
+  | ({ dia: number; titulo_dia?: string; itinerario?: ItineraryItem[]; tip_pro?: string } & Record<string, any>)
+  | ({ dia?: number } & Record<string, any>)
 
 interface ItineraryPanelProps {
   destination: string
@@ -150,31 +160,131 @@ export function ItineraryPanel({ destination, duration, itineraryData = [], isGe
 
 // --- Componentes Auxiliares (Sin cambios grandes, solo types) ---
 
+interface ItineraryItemCardProps {
+  activity: string
+  category?: string
+  hora?: string
+  momento?: string
+  detalles?: string
+}
+
+function ItineraryItemCard({ activity, category, hora, momento, detalles }: ItineraryItemCardProps) {
+  const normalizeCategory = (c: any) => {
+    if (!c) return 'General'
+    const s = String(c).toLowerCase()
+    if (s.includes('cultur')) return 'Culture'
+    if (s.includes('gastr') || s.includes('food') || s.includes('tapa')) return 'Food'
+    if (s.includes('hike') || s.includes('trek') || s.includes('sender')) return 'Hiking'
+    if (s.includes('relax')) return 'Relaxation'
+    if (s.includes('sight') || s.includes('tour') || s.includes('view')) return 'Sightseeing'
+    return 'General'
+  }
+  
+  const catKey = normalizeCategory(category)
+  const CategoryIcon = categoryIcons[catKey] || Camera
+  const categoryColor = categoryColors[catKey] || "bg-secondary text-secondary-foreground"
+
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-border/50 p-2 bg-secondary/30 xl:p-2.5">
+      <div className="flex items-start justify-between">
+        <div className="flex items-start gap-2 flex-1">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-secondary xl:h-7 xl:w-7">
+            <CategoryIcon className="h-3 w-3 text-muted-foreground xl:h-3.5 xl:w-3.5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              {hora && <span className="text-[9px] font-semibold text-muted-foreground xl:text-[10px] bg-secondary/50 px-1.5 py-0.5 rounded">{hora}</span>}
+              {momento && <span className="text-[9px] font-medium text-foreground xl:text-[10px]">{momento}</span>}
+            </div>
+            <p className="text-[11px] font-medium text-foreground xl:text-xs mt-1">{activity}</p>
+          </div>
+        </div>
+        <Badge
+          variant="secondary"
+          className={cn(
+            "h-4 gap-0.5 px-1 text-[9px] font-medium xl:h-5 xl:gap-1 xl:px-1.5 xl:text-[10px] shrink-0",
+            categoryColor,
+          )}
+        >
+          <CategoryIcon className="h-2 w-2 xl:h-2.5 xl:w-2.5" />
+          {catKey}
+        </Badge>
+      </div>
+      {detalles && (
+        <p className="text-[9px] text-muted-foreground xl:text-[10px] pl-8 border-l-2 border-amber-500/30 italic">{detalles}</p>
+      )}
+    </div>
+  )
+}
+
 interface DayCardProps {
   day: number
   dayData?: DayItinerary | any
 }
 
 function DayCard({ day, dayData }: DayCardProps) {
-  // Backend may return { dia, resumen, actividades: [] } or the older morning/lunch/afternoon shape
-  const resumen = (dayData && (dayData.resumen || dayData.summary || dayData.resumen)) || null
-  const actividades = (dayData && (dayData.actividades || dayData.actividades || dayData.activities)) || null
+  // Backend may return different structures: 
+  // - Nuevo formato: { dia, titulo_dia, resumen, itinerario: [...], tip_pro }
+  // - Antiguo formato: { dia, resumen, actividades: [...] }
+  // - Legacy: { dia, morning, lunch, afternoon }
+  
+  const titulo_dia = (dayData && (dayData.titulo_dia || dayData.title)) || null
+  const resumen = (dayData && (dayData.resumen || dayData.summary)) || null
+  const itinerario = (dayData && (dayData.itinerario || dayData.itinerario)) || null
+  const actividades = (dayData && (dayData.actividades || dayData.activities)) || null
+  const tip_pro = (dayData && dayData.tip_pro) || null
 
   return (
     <div className="glass-subtle overflow-hidden rounded-xl">
       <div className="bg-red-500/10 px-2.5 py-1.5 xl:px-3 xl:py-2">
         <h3 className="text-xs font-semibold text-foreground xl:text-sm">Day {day}</h3>
+        {titulo_dia && <p className="text-[10px] text-muted-foreground xl:text-xs">{titulo_dia}</p>}
       </div>
       <div className="space-y-2 p-2 xl:space-y-2.5 xl:p-3">
         {resumen && <p className="text-sm text-muted-foreground">{resumen}</p>}
 
-        {actividades && Array.isArray(actividades) && (
+        {/* NUEVO FORMATO: itinerario con horas y detalles */}
+        {itinerario && Array.isArray(itinerario) && (
+          <div className="space-y-2">
+            {itinerario.map((item: any, idx: number) => {
+              const actText = typeof item === "string" ? item : (item.activity || item.nombre || item.name || String(item))
+              const hora = typeof item === "object" ? item.hora : undefined
+              const momento = typeof item === "object" ? item.momento : undefined
+              const detalles = typeof item === "object" ? item.detalles : undefined
+              const rawCat = typeof item === "object" ? (item.category || item.categoria || item.type) : undefined
+              
+              const normalizeCategory = (c: any) => {
+                if (!c) return undefined
+                const s = String(c).toLowerCase()
+                if (s.includes('cultur')) return 'Culture'
+                if (s.includes('gastr') || s.includes('food') || s.includes('tapa')) return 'Food'
+                if (s.includes('hike') || s.includes('trek') || s.includes('sender')) return 'Hiking'
+                if (s.includes('relax')) return 'Relaxation'
+                if (s.includes('sight') || s.includes('tour') || s.includes('view')) return 'Sightseeing'
+                return 'General'
+              }
+              const catKey = normalizeCategory(rawCat)
+
+              return (
+                <ItineraryItemCard
+                  key={idx}
+                  activity={actText}
+                  category={catKey}
+                  hora={hora}
+                  momento={momento}
+                  detalles={detalles}
+                />
+              )
+            })}
+          </div>
+        )}
+
+        {/* ANTIGUO FORMATO: actividades sin horas */}
+        {!itinerario && actividades && Array.isArray(actividades) && (
           <div className="space-y-2">
             {actividades.map((a: any, idx: number) => {
-              // Normalize activity object or string
               const actText = typeof a === "string" ? a : (a.activity || a.nombre || a.name || String(a))
               const rawCat = typeof a === "object" ? (a.category || a.categoria || a.type) : undefined
-              // Normalize category to expected keys
               const normalizeCategory = (c: any) => {
                 if (!c) return undefined
                 const s = String(c).toLowerCase()
@@ -201,8 +311,8 @@ function DayCard({ day, dayData }: DayCardProps) {
           </div>
         )}
 
-        {/* Fallback: try morning/lunch/afternoon if present */}
-        {!resumen && !actividades && (
+        {/* LEGACY FORMAT: morning/lunch/afternoon */}
+        {!itinerario && !actividades && (
           <div className="space-y-2">
             {dayData?.morning && <ActivityItem icon={Sun} label="Morning" {...(dayData.morning || {})} />}
             {dayData?.lunch && <ActivityItem icon={Utensils} label="Lunch" {...(dayData.lunch || {})} />}
@@ -210,6 +320,14 @@ function DayCard({ day, dayData }: DayCardProps) {
             {(!dayData?.morning && !dayData?.lunch && !dayData?.afternoon) && (
               <p className="text-[10px] text-muted-foreground italic">Planning activities...</p>
             )}
+          </div>
+        )}
+
+        {/* TIP PRO */}
+        {tip_pro && (
+          <div className="mt-2 rounded-lg border border-amber-500/30 bg-amber-500/10 p-2">
+            <p className="text-[10px] font-semibold text-amber-700 dark:text-amber-300 xl:text-xs">💡 Tip Pro</p>
+            <p className="text-[9px] text-amber-600 dark:text-amber-400 xl:text-[10px]">{tip_pro}</p>
           </div>
         )}
       </div>
