@@ -6,48 +6,58 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def get_chat_model(model_name: str = "smart"):
-    """Return a tuple (llm_instance, provider_name).
+def get_chat_model(model_name: str | None = None):
+    """Devuelve una tupla (llm_instance, provider_name).
 
-    For Groq models, this function requires a valid `GROQ_API_KEY` env var.
-    If the key is missing and a Groq model is requested, it raises RuntimeError so
-    the caller can surface a clear error to the user instead of silently falling
-    back to a different provider.
+    - Si `model_name` es None o cadena vacía, se toma de la variable de entorno
+      LLM_MODEL o se usa "smart" por defecto.
+    - Para modelos Groq, se requiere GROQ_API_KEY; si falta, se lanza RuntimeError
+      para que el caller pueda mostrar un error claro.
     """
+    # Normalizar modelo
+    if not model_name:
+        model_name = os.getenv("LLM_MODEL", "smart")
+
     print(f"🎛️  LLM_ENGINE RECIBIÓ: '{model_name}'")
 
     groq_api_key = os.getenv("GROQ_API_KEY")
 
     # Fast -> Groq 8B
-    if model_name == "fast" or model_name == "llama3.2:7b":
+    if model_name in ("fast", "llama3.2:7b", "groq_8b"):
         print("⚡ Modo seleccionado: Groq 8B (rápido)")
         if not groq_api_key:
             raise RuntimeError(
                 "GROQ_API_KEY no encontrada en el entorno. No se puede usar Groq 8B. "
-                "Por favor configura GROQ_API_KEY o selecciona 'local'."
+                "Configura GROQ_API_KEY o selecciona 'local'."
             )
-        llm = ChatGroq(model="llama-3.1-8b-instant", temperature=0.0, api_key=groq_api_key)
+        llm = ChatGroq(
+            model="llama-3.1-8b-instant", temperature=0.0, api_key=groq_api_key
+        )
         return llm, "groq_8b"
 
     # Smart -> Groq 70B
-    if model_name == "smart" or model_name == "gpt-4o":
+    if model_name in ("smart", "gpt-4o", "groq_70b"):
         print("🧠 Modo seleccionado: Groq 70B (potente)")
         if not groq_api_key:
             raise RuntimeError(
                 "GROQ_API_KEY no encontrada en el entorno. No se puede usar Groq 70B. "
-                "Por favor configura GROQ_API_KEY o selecciona 'local'."
+                "Configura GROQ_API_KEY o selecciona 'local'."
             )
-        llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.0, api_key=groq_api_key)
+        llm = ChatGroq(
+            model="llama-3.3-70b-versatile", temperature=0.0, api_key=groq_api_key
+        )
         return llm, "groq_70b"
 
     # Local -> Ollama
-    if model_name == "local" or model_name == "llama3.2:3b":
+    if model_name in ("local", "llama3.2:3b", "ollama_local"):
         print("🏠 Modo seleccionado: Ollama local")
         llm = _fallback_local()
         return llm, "ollama_local"
 
-    # Unknown -> error
-    raise RuntimeError(f"Modelo desconocido: '{model_name}'. Selecciona 'smart'|'fast'|'local'.")
+    # Modelo desconocido
+    raise RuntimeError(
+        f"Modelo desconocido: '{model_name}'. Selecciona 'smart'|'fast'|'local'."
+    )
 
 
 def _fallback_local():

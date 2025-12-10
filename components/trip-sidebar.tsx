@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import type React from "react"
 import { MapPin, Clock, Mountain, Sparkles, History, ChevronRight, Trash } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -39,9 +40,7 @@ export function TripSidebar({
   onDeleteConversation,
 }: TripSidebarProps) {
   const [activeCard, setActiveCard] = useState<number | null>(null)
-  
-  // Eliminamos lógica de modelo de aquí ya que se movió al Header para mejor UX/DX
-  
+
   const handleCardClick = (id: number) => {
     setActiveCard(id)
     setTimeout(() => setActiveCard(null), 150)
@@ -50,9 +49,9 @@ export function TripSidebar({
   // Helper para manejar la apertura segura
   const handleOpen = (chat: any) => {
     if (onOpenConversation) {
-        onOpenConversation(chat)
+      onOpenConversation(chat)
     } else {
-        handleCardClick(chat.id)
+      handleCardClick(chat.id)
     }
   }
 
@@ -76,7 +75,9 @@ export function TripSidebar({
               id="destination"
               placeholder="Madrid, Asturias, Sevilla..."
               value={destination}
-              onChange={(e) => setDestination(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setDestination(e.target.value)
+              }
               className="h-10 rounded-xl border-border bg-secondary/50 text-foreground transition-colors placeholder:text-muted-foreground focus:bg-secondary xl:h-11"
             />
           </div>
@@ -93,7 +94,7 @@ export function TripSidebar({
             </div>
             <Slider
               value={[duration]}
-              onValueChange={(value) => setDuration(value[0])}
+              onValueChange={(value: number[]) => setDuration(value[0])}
               min={1}
               max={15}
               step={1}
@@ -118,19 +119,25 @@ export function TripSidebar({
               ].map((option) => (
                 <button
                   key={option.value}
+                  type="button"
                   onClick={() => setDifficulty(option.value)}
                   className={cn(
                     "flex w-full cursor-pointer items-center gap-3 rounded-xl border-2 border-transparent bg-secondary/50 p-2.5 text-left transition-all hover:bg-secondary xl:p-3",
-                    difficulty === option.value && "border-red-500 bg-red-500/10 dark:bg-red-500/15",
+                    difficulty === option.value &&
+                      "border-red-500 bg-red-500/10 dark:bg-red-500/15",
                   )}
                 >
                   <div
                     className={cn(
                       "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors xl:h-5 xl:w-5",
-                      difficulty === option.value ? "border-red-500 bg-red-500" : "border-muted-foreground/40",
+                      difficulty === option.value
+                        ? "border-red-500 bg-red-500"
+                        : "border-muted-foreground/40",
                     )}
                   >
-                    {difficulty === option.value && <div className="h-1.5 w-1.5 rounded-full bg-white xl:h-2 xl:w-2" />}
+                    {difficulty === option.value && (
+                      <div className="h-1.5 w-1.5 rounded-full bg-white xl:h-2 xl:w-2" />
+                    )}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-foreground">{option.label}</p>
@@ -157,46 +164,50 @@ export function TripSidebar({
             History
           </h3>
           <div className="space-y-2">
-            <div className="flex gap-2 mb-2">
-              <button 
-                onClick={() => onNewConversation && onNewConversation()} 
-                className="rounded-md px-3 py-2 text-xs font-medium bg-secondary hover:bg-secondary/80 text-foreground transition-colors w-full text-center"
+            <div className="mb-2 flex gap-2">
+              <button
+                type="button"
+                onClick={() => onNewConversation && onNewConversation()}
+                className="w-full rounded-md bg-secondary px-3 py-2 text-center text-xs font-medium text-foreground transition-colors hover:bg-secondary/80"
               >
                 + New Chat
               </button>
             </div>
             {conversations.length === 0 && (
-              <p className="text-xs text-muted-foreground italic text-center py-2">No conversations yet.</p>
+              <p className="py-2 text-center text-xs italic text-muted-foreground">
+                No conversations yet.
+              </p>
             )}
-            {conversations.map((chat) => (
-              <div 
-                key={chat.id} 
+            {conversations.map((chat: any) => (
+              <div
+                key={chat.id}
                 className={cn(
-                    "history-card group relative glass-subtle flex w-full items-center justify-between rounded-xl p-2.5 xl:p-3 cursor-pointer", 
-                    activeCard === chat.id && "animate-press"
+                  "history-card group relative glass-subtle flex w-full cursor-pointer items-center justify-between rounded-xl p-2.5 xl:p-3",
+                  activeCard === chat.id && "animate-press",
                 )}
                 onClick={() => handleOpen(chat)}
               >
                 <div className="min-w-0 flex-1 pr-2">
-                    <p className="truncate text-sm font-medium text-foreground">{chat.title}</p>
-                    <p className="text-xs text-muted-foreground">{chat.date}</p>
+                  <p className="truncate text-sm font-medium text-foreground">{chat.title}</p>
+                  <p className="text-xs text-muted-foreground">{chat.date}</p>
                 </div>
-                
+
                 <div className="flex items-center gap-1">
                   {/* Botón DELETE con stopPropagation crítico */}
                   <button
+                    type="button"
                     aria-label={`Delete ${chat.title}`}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        if (onDeleteConversation) onDeleteConversation(chat.id);
+                    onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                      e.stopPropagation()
+                      e.preventDefault()
+                      if (onDeleteConversation) onDeleteConversation(chat.id)
                     }}
-                    className="rounded-md p-1.5 text-muted-foreground hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                    className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-red-100 hover:text-red-600 focus:opacity-100 dark:hover:bg-red-900/30 dark:hover:text-red-400 group-hover:opacity-100"
                     title="Delete conversation"
                   >
                     <Trash className="h-4 w-4" />
                   </button>
-                  
+
                   <ChevronRight className="h-4 w-4 text-muted-foreground/50" />
                 </div>
               </div>
