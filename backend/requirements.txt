@@ -1,0 +1,29 @@
+# --- (API) ---
+fastapi
+uvicorn
+python-multipart
+python-dotenv
+
+# --- (IA y LangChain) ---
+ollama
+langchain
+langchain-community
+langchain-ollama
+langchain-text-splitters
+langchain-chroma
+langchain-groq
+
+# --- Bases de datos y Vectores ---
+chromadb
+numpy
+python-multipart
+
+# --- Procesamiento de Imágenes ---
+Pillow
+
+# --- Archivos y PDFs ---
+pypdf
+pymupdf           
+
+# --- Interfaz  ---
+streamlit
