@@ -233,7 +233,7 @@ export function ChatArea({ messages, isGenerating, onSendMessage }: ChatAreaProp
       <div className="custom-scrollbar flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
         <div className="mx-auto max-w-2xl space-y-4 sm:space-y-5">
           {messages.map((message, index) => (
-            <div key={index} className={cn("flex gap-2 sm:gap-3", message.role === "user" && "flex-row-reverse")}>
+            <div key={`msg-${message.role}-${index}`} className={cn("flex gap-2 sm:gap-3", message.role === "user" && "flex-row-reverse")}>
               <div
                 className={cn(
                   "flex h-8 w-8 shrink-0 items-center justify-center rounded-full shadow-md sm:h-9 sm:w-9",

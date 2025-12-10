@@ -128,7 +128,7 @@ export function ItineraryPanel({ destination, duration, itineraryData = [], isGe
           {hasData && visibleDays.map((dayData, index) => {
             const dayNum = (dayData && (dayData.day || dayData.dia)) || (index + 1)
             return (
-              <DayCard key={index} day={dayNum} dayData={dayData} />
+              <DayCard key={`day-${dayNum}`} day={dayNum} dayData={dayData} />
             )
           })}
 
@@ -267,7 +267,7 @@ function DayCard({ day, dayData }: DayCardProps) {
 
               return (
                 <ItineraryItemCard
-                  key={idx}
+                  key={`item-${hora || momento || idx}`}
                   activity={actText}
                   category={catKey}
                   hora={hora}
@@ -300,7 +300,7 @@ function DayCard({ day, dayData }: DayCardProps) {
 
               return (
                 <ActivityItem
-                  key={idx}
+                  key={`activity-${idx}`}
                   icon={LeftIcon}
                   label={`Activity ${idx + 1}`}
                   activity={actText}

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { PanelRightClose, PanelRightOpen, Moon, Sun, Menu, Plane } from "lucide-react"
+import { PanelRightClose, PanelRightOpen, Moon, Sun, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "next-themes"
 
@@ -30,7 +30,7 @@ export function Header({
 
   useEffect(() => {
     setMounted(true)
-  }, [])
+  }, [setMounted])
 
   const isDark = mounted && resolvedTheme === "dark"
 
@@ -56,8 +56,8 @@ export function Header({
           <span className="sr-only">Toggle settings</span>
         </Button>
 
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg shadow-red-500/25 sm:h-10 sm:w-10">
-          <Plane className="h-4 w-4 sm:h-5 sm:w-5" />
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white shadow-lg shadow-gray-200/50 sm:h-10 sm:w-10 overflow-hidden">
+          <img src="/logo.png" alt="RutaÑ logo" className="h-full w-full object-contain" />
         </div>
         <div className="hidden xs:block sm:block">
           <h1 className="text-base font-bold tracking-tight text-foreground sm:text-lg md:text-xl">

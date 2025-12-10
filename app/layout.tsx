@@ -12,12 +12,12 @@ export const metadata: Metadata = {
   title: "RutaÑ - Your Spanish Adventure Planner",
   description:
     "Plan your perfect trip to Spain with AI-powered itinerary generation, personalized recommendations, and seamless travel planning.",
-  generator: "v0.app",
+  generator: "RutaÑ",
   icons: {
     icon: [
-      { url: "/icon-light-32x32.png", media: "(prefers-color-scheme: light)" },
-      { url: "/icon-dark-32x32.png", media: "(prefers-color-scheme: dark)" },
-      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/logo.png", media: "(prefers-color-scheme: light)" },
+      { url: "/logo.png", media: "(prefers-color-scheme: dark)" },
+      { url: "/logo.png", type: "image" },
     ],
     apple: "/apple-icon.png",
   },
